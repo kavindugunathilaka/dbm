@@ -2,12 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Password-protects internal tools (/tools/*) with HTTP Basic Auth.
 // Set TOOLS_USER and TOOLS_PASSWORD in the hosting environment (Vercel → Settings → Environment Variables).
-// If they are not set, the tools are locked rather than left open.
+// Demo mode: if they are NOT set, the tools are open to anyone with the link.
 export function proxy(req: NextRequest) {
   const user = process.env.TOOLS_USER;
   const pass = process.env.TOOLS_PASSWORD;
+  if (!user || !pass) return NextResponse.next();
 
-  if (user && pass) {
+  {
     const header = req.headers.get("authorization") ?? "";
     const [scheme, encoded] = header.split(" ");
     if (scheme === "Basic" && encoded) {
