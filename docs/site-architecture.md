@@ -116,7 +116,7 @@ Brief form (multi-step on mobile: 1. project type → 2. location and plot size 
 ```
                  Cloudflare (DNS, CDN, WAF, Colombo PoP, cache static/images)
                                    │ HTTPS (origin cert)
- ┌──────────────────────── VPS: Ubuntu 24.04 LTS ─────────────────────────┐
+ ┌──────────── VPS: Contabo Cloud VPS (Singapore), Ubuntu 24.04 ──────────┐
  │  Caddy (reverse proxy, HTTP/3, compression, security headers)          │
  │     ├── web   : Next.js (App Router, SSG/ISR, standalone) + Payload CMS │
  │     │           /admin  → content editing (projects, posts, FAQs)       │
@@ -145,7 +145,38 @@ Brief form (multi-step on mobile: 1. project type → 2. location and plot size 
 | Backups | `restic` nightly: Postgres dump + uploads → R2/B2, keep 30 days, monthly restore drill | |
 | Hardening | SSH keys only, `ufw` (80/443 limited to Cloudflare IP ranges), `fail2ban`, `unattended-upgrades`, non-root containers | |
 
-**VPS size:** 2 vCPU / 4 GB RAM / 80 GB SSD is enough for v1. Singapore is the nearest major region to Sri Lanka, and Cloudflare caches content in Colombo.
+### Hosting: Contabo VPS (confirmed)
+
+| Item | Choice |
+|---|---|
+| Plan | Entry **Cloud VPS** tier (4 vCPU / 8 GB class). This is ample for Next + Payload + Go + Postgres and leaves headroom for Next.js builds. |
+| Region | **Asia, Singapore** (the lowest latency to Sri Lanka among Contabo regions). If an India region appears at checkout, compare ping from Colombo before choosing. |
+| Storage | NVMe option if offered |
+| OS | Ubuntu 24.04 LTS |
+| Network | IPv4 + IPv6, behind Cloudflare (proxied) |
+
+**Contabo risks and mitigations:**
+- **Shared and variable CPU/network performance.** Mitigations:
+  - Pages are static and cached at Cloudflare's edge, so most visitor requests never reach the VPS.
+  - Build images in **GitHub Actions** rather than on the VPS; the VPS only pulls and runs them.
+- **Slow support and no built-in managed backups.** Mitigations:
+  - Off-site `restic` backups to Cloudflare R2 are **mandatory**, not optional.
+  - Take a Contabo snapshot before each infrastructure change.
+  - Run a monthly restore drill.
+- **Basic firewall control.** Mitigations:
+  - Use `ufw` on the host, and allow 80/443 only from Cloudflare IP ranges.
+  - SSH on a key, with `fail2ban`.
+  - Enable the Contabo panel firewall too, if it is available on the plan.
+- **No status alerts.** Mitigation: Uptime Kuma, plus an external free monitor (for example UptimeRobot), because Kuma on the same box can't report that the box itself is down.
+
+**First-boot provisioning checklist:**
+1. Create a non-root sudo user, install SSH keys, disable password and root login.
+2. Turn on `ufw`, `fail2ban` and `unattended-upgrades`, and set the timezone to `Asia/Colombo`.
+3. Add 2 GB of swap as a safety net for memory spikes.
+4. Install Docker Engine + the Compose plugin, and set log rotation (`max-size=10m`).
+5. In Cloudflare DNS, add `A`/`AAAA` records for `dbm.lk` pointing to the VPS IP (proxied). Set SSL to **Full (strict)** with a Cloudflare Origin Certificate in Caddy.
+6. Create a deploy user plus a GitHub Actions SSH key restricted to the deploy directory.
+7. Set up R2 bucket credentials and the restic cron, then run a test restore.
 
 ### Repo layout
 ```
@@ -247,4 +278,4 @@ Edge cases to design for:
 3. Project photos and drawings (Pannala plus any others), and permission to publish client names.
 4. Logo in vector form (SVG/AI) and the brand colours (the red/black "dbm" mark).
 5. Team bios and photos.
-6. VPS provider choice (or we recommend one).
+6. ~~VPS provider~~ Contabo confirmed: need panel access or the VPS IP plus an SSH key for setup.
