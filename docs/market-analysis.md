@@ -83,7 +83,20 @@ _Prepared 2026-11-05 for the DBM Associate (Pvt) Ltd website build._
 | Informational / AEO | UDA building approval process, house plan approval documents Sri Lanka, construction cost per sq ft Sri Lanka 2026, architect fees Sri Lanka |
 | Sinhala | ගෙවල් සැලසුම් (house plans), ගොඩනැගිලි අනුමැතිය (building approval), ගබඩා ගොඩනැගිලි (warehouse buildings) |
 
-## 6. Proposed stack
+## 6. Domain: dbm.lk (purchased)
+
+- **Strength:** a short three-letter brand matching the logo, and the `.lk` ccTLD sends a geo-signal for Sri Lanka in Google and AI answer engines. Most Segment A competitors also use `.lk`, so this puts DBM on the same footing.
+- **Weakness:** "dbm" carries no keywords and is ambiguous: DBM is also a common abbreviation (database management, the Dutch firm DBM, etc.). Ranking depends on the entity signals in the list below, not on the domain name.
+  - `Organization` schema with `legalName` "DBM Associate (Pvt) Ltd", `alternateName` "DBM Associates", address, phone numbers and `sameAs` links to Google Business Profile, Facebook and LinkedIn.
+  - The same name, address and phone (NAP) everywhere: Google Business Profile at Pannipitiya, directories (lankayp, findit.lk) and Archello.
+  - A title pattern such as `DBM Associates | Architects & Building Consultants, Pannipitiya`.
+- **Setup:**
+  - Point nameservers to Cloudflare, set the apex `dbm.lk` as canonical and 301-redirect `www`.
+  - Enforce HTTPS with HSTS.
+  - Business email `info@dbm.lk` with SPF, DKIM and DMARC, so lead-form notifications don't land in spam.
+- **Optional:** if `dbmassociates.lk` or `dbm.com.lk` is free, register it as a defensive 301 redirect.
+
+## 7. Proposed stack
 
 Next.js (App Router, SSG/ISR) + headless CMS for projects/blog (Sanity or Payload) + a small Go API for the lead form, estimator and WhatsApp/email notifications. Deploy on Vercel or Cloudflare. CI: lint, type-check, Playwright smoke tests, Lighthouse CI budget gate.
 
