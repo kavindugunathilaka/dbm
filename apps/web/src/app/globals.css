@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* DBM brand tokens: ink black + signal red (from the dbm wordmark) on warm paper. */
+@theme {
+  --color-ink: #141414;
+  --color-ink-2: #2a2a2a;
+  --color-muted: #5b5b58;
+  --color-paper: #fafaf7;
+  --color-paper-2: #f1f0eb;
+  --color-line: #e3e1da;
+  --color-brand: #e1251b;
+  --color-brand-dark: #b81b13; /* text-safe red on paper (AA) */
+  --color-blueprint: #1d2a3a;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+
+  --radius-card: 1.25rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper text-ink antialiased;
+    font-feature-settings: "ss01";
+  }
+  ::selection {
+    @apply bg-brand text-white;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+@utility container-x {
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+}
+@utility eyebrow {
+  @apply text-xs font-bold uppercase tracking-[0.18em] text-brand-dark;
+}
+@utility h2 {
+  @apply text-3xl font-extrabold tracking-tight text-balance sm:text-4xl;
+}
+@utility btn {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-bold transition-colors;
+}
+@utility btn-primary {
+  @apply btn bg-brand text-white hover:bg-brand-dark;
+}
+@utility btn-ghost {
+  @apply btn border border-ink/15 bg-white text-ink hover:border-ink/40;
+}
+@utility card {
+  @apply rounded-[var(--radius-card)] border border-line bg-white p-6;
+}
+@utility blueprint-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
