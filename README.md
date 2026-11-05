@@ -20,3 +20,7 @@ docker run -p 3000:3000 dbm-web
 ```
 
 Company facts (address, phones, Reg. No.) live in `apps/web/src/lib/site.ts`. Keep them in sync with the Google Business Profile.
+
+## Internal tools
+- `/tools/bill`: generates a branded A4 **Payment Receipt** or **Invoice** PDF in the browser (pdf-lib; no data is sent to a server, and drafts are kept in the browser's localStorage). The page is `noindex` and disallowed in robots.txt.
+  **Before going live, protect `/tools/*` with Caddy `basic_auth`.** Otherwise anyone can produce DBM-branded receipts.

@@ -7,8 +7,8 @@ const aiBots = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "PerplexityBot", "Cla
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: "*", allow: "/" },
-      ...aiBots.map((userAgent) => ({ userAgent, allow: "/" })),
+      { userAgent: "*", allow: "/", disallow: "/tools/" },
+      ...aiBots.map((userAgent) => ({ userAgent, allow: "/", disallow: "/tools/" })),
     ],
     sitemap: `${site.url}/sitemap.xml`,
     host: site.url,
