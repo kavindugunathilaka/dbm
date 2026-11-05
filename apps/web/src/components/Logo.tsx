@@ -1,5 +1,4 @@
-// DBM wordmark: monoline "db" in ink, "m" in brand red (redrawn from company stationery).
-// TODO(DBM): replace with the official vector logo when supplied.
+// Official DBM wordmark (approved by DBM): monoline "db" in ink #141414, "m" in brand red #e1251b.
 type Props = { className?: string; inverted?: boolean; title?: string };
 
 export function Logo({ className = "h-8 w-auto", inverted = false, title = "DBM Associates" }: Props) {

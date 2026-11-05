@@ -20,7 +20,7 @@ export const site = {
     { display: "074 060 0780", e164: "+94740600780" },
     { display: "070 403 5095", e164: "+94704035095" },
   ],
-  // TODO(DBM): confirm which number is on WhatsApp.
+  // WhatsApp: 074 060 0780 (confirmed by DBM).
   whatsapp: "94740600780",
   mapsUrl:
     "https://www.google.com/maps/search/?api=1&query=60%2F1+Digana+Road+Palanwatta+Pannipitiya",
