@@ -62,6 +62,21 @@ function wrap(ctx: Ctx, raw: string, font: PDFFont, size: number, maxW: number):
   return lines.length ? lines : [""];
 }
 
+// Draws `raw` spread evenly between x1 and x2 (letter-spaced to match the logo width).
+function trackedFit(ctx: Ctx, raw: string, x1: number, x2: number, y: number, font: PDFFont, color: RGB, maxSize: number) {
+  const chars = [...safe(ctx, raw)];
+  const target = x2 - x1;
+  let size = maxSize;
+  while (size > 5 && font.widthOfTextAtSize(chars.join(""), size) + (chars.length - 1) * 0.6 > target) size -= 0.25;
+  const natural = font.widthOfTextAtSize(chars.join(""), size);
+  const gap = chars.length > 1 ? Math.max(0, (target - natural) / (chars.length - 1)) : 0;
+  let x = x1;
+  for (const ch of chars) {
+    ctx.page.drawText(ch, { x, y, size, font, color });
+    x += font.widthOfTextAtSize(ch, size) + gap;
+  }
+}
+
 function hline(ctx: Ctx, x1: number, x2: number, y: number, color = C.line, thickness = 0.8) {
   ctx.page.drawLine({ start: { x: x1, y }, end: { x: x2, y }, thickness, color });
 }
@@ -87,7 +102,7 @@ function drawHeader(ctx: Ctx, title: string, meta: [string, string][]): number {
 
   const s = 0.95;
   drawLogo(ctx, W - M - 92 * s, y0 + 12, s);
-  text(ctx, "ARCHITECTS & BUILDING CONSULTANTS", W - M, y0 - 41, { size: 6.5, color: C.muted, align: "right", font: f.bold });
+  trackedFit(ctx, site.printTagline, W - M - 92 * s, W - M, y0 - 35, f.bold, C.muted, 7.5);
 
   hline(ctx, M, W - M, y0 - 58);
 

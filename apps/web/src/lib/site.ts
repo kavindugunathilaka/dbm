@@ -7,6 +7,8 @@ export const site = {
   legalName: "DBM Associate (Pvt) Ltd",
   regNo: "P.V.00227523",
   tagline: "Architects & Building Consultants",
+  // Brand line printed under the logo on receipts and invoices.
+  printTagline: "DESIGN BUILD & MANAGE",
   description:
     "DBM Associates is an architectural and building consultancy in Pannipitiya, Sri Lanka. We design warehouses, offices and homes and take clients from first brief to approved drawings.",
   address: {
