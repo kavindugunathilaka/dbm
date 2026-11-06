@@ -12,9 +12,11 @@ export default function Home() {
       <section className="relative overflow-hidden">
         <div className="container-x grid items-center gap-10 pb-12 pt-8 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:pb-24 lg:pt-20">
           <div>
-            <p className="eyebrow">Pannipitiya · Sri Lanka</p>
-            <h1 className="mt-4 text-[2.5rem] font-extrabold leading-[1.05] tracking-tight text-balance sm:text-6xl">
-              Architects &amp; Building Consultants<span className="text-brand">.</span>
+            <h1>
+              <span className="eyebrow block">{site.descriptor} · Pannipitiya</span>
+              <span className="mt-4 block text-[2.75rem] font-extrabold leading-[1.02] tracking-tight text-balance sm:text-7xl">
+                Design, Build <span className="whitespace-nowrap">&amp; Manage<span className="text-brand">.</span></span>
+              </span>
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
               From first brief to approved drawings: warehouses, offices and homes, designed properly and built right.

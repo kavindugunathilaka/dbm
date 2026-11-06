@@ -8,7 +8,7 @@ export function Footer() {
         <div>
           <Logo inverted className="h-9 w-auto" />
           <p className="mt-4 max-w-sm text-sm leading-relaxed">
-            {site.legalName}. {site.tagline} in Pannipitiya, Sri Lanka.
+            {site.legalName}. {site.tagline}. {site.descriptor} in Pannipitiya, Sri Lanka.
           </p>
           <p className="mt-3 text-xs text-white/50">Company Reg. No. {site.regNo}</p>
         </div>

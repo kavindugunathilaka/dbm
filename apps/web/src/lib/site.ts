@@ -6,11 +6,13 @@ export const site = {
   name: "DBM Associates",
   legalName: "DBM Associate (Pvt) Ltd",
   regNo: "P.V.00227523",
-  tagline: "Architects & Building Consultants",
+  tagline: "Design, Build & Manage",
+  // What DBM is, for SEO titles and copy (keep the keyword next to the brand line).
+  descriptor: "Architects & Building Consultants",
   // Brand line printed under the logo on receipts and invoices.
   printTagline: "DESIGN BUILD & MANAGE",
   description:
-    "DBM Associates is an architectural and building consultancy in Pannipitiya, Sri Lanka. We design warehouses, offices and homes and take clients from first brief to approved drawings.",
+    "DBM Associates (Design, Build & Manage) is an architectural and building consultancy in Pannipitiya, Sri Lanka. We design warehouses, offices and homes and take clients from first brief to approved drawings.",
   address: {
     street: "No. 60/1, Digana Road, Palanwatta",
     locality: "Pannipitiya",

@@ -8,7 +8,7 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", displa
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} | ${site.tagline} in Pannipitiya, Sri Lanka`,
+    default: `${site.name} | ${site.tagline}: ${site.descriptor} in Pannipitiya, Sri Lanka`,
     template: `%s | ${site.name}`,
   },
   description: site.description,

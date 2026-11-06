@@ -11,6 +11,7 @@ export function homeJsonLd() {
         "@id": orgId,
         name: site.name,
         legalName: site.legalName,
+        slogan: site.tagline,
         alternateName: ["DBM", "DBM Associate (Pvt) Ltd"],
         url: site.url,
         logo: `${site.url}/icon.svg`,
