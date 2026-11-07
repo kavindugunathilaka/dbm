@@ -1,23 +1,17 @@
-// Official DBM wordmark (approved by DBM): monoline "db" in ink #141414, "m" in brand red #e1251b.
+// Official DBM wordmark: "db" black, "m" red, matching DBM's invoice template logo.
+import { LOGO } from "@/lib/logo";
+
 type Props = { className?: string; inverted?: boolean; title?: string };
 
 export function Logo({ className = "h-8 w-auto", inverted = false, title = "DBM Associates" }: Props) {
-  const ink = inverted ? "#ffffff" : "var(--color-ink)";
+  const ink = inverted ? "#ffffff" : LOGO.ink;
   return (
-    <svg viewBox="0 0 92 38" className={className} role="img" aria-label={title} fill="none">
+    <svg viewBox={LOGO.viewBox} className={className} role="img" aria-label={title} fill="none">
       <title>{title}</title>
-      <g strokeWidth="5" strokeLinecap="butt" strokeLinejoin="round">
-        {/* d */}
-        <circle cx="12" cy="25" r="8.5" stroke={ink} />
-        <path d="M20.5 1.5V36.5" stroke={ink} />
-        {/* b */}
-        <path d="M31 1.5V36.5" stroke={ink} />
-        <circle cx="39.5" cy="25" r="8.5" stroke={ink} />
-        {/* m */}
-        <path
-          d="M55 36.5V25a8.5 8.5 0 0 1 17 0v11.5M72 25a8.5 8.5 0 0 1 17 0v11.5"
-          stroke="var(--color-brand)"
-        />
+      <g strokeWidth={LOGO.stroke} strokeLinecap="butt" strokeLinejoin="round">
+        <path d={LOGO.d} stroke={ink} />
+        <path d={LOGO.b} stroke={ink} />
+        <path d={LOGO.m} stroke={LOGO.red} />
       </g>
     </svg>
   );

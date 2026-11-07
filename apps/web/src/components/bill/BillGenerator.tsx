@@ -5,8 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "@/components/Logo";
 import type { BillState, DocType, InvoiceData, InvoiceLine, Issuer, PaymentMethod, ReceiptData } from "@/lib/bill/types";
 import { amountToWords, formatLKR, parseAmount } from "@/lib/bill/words";
+import { consultancyFee } from "@/lib/bill/fee";
 
 const STORAGE_KEY = "dbm-bill-v1";
+const SIG_KEY = "dbm-bill-signature-v1";
+const toB64 = (buf: ArrayBuffer) => btoa(Array.from(new Uint8Array(buf), (c) => String.fromCharCode(c)).join(""));
+const fromB64 = (b64: string) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
 const METHODS: PaymentMethod[] = ["Cheque", "Cash", "Bank Transfer", "Online Payment"];
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -38,6 +42,8 @@ const defaultInvoice = (): InvoiceData => ({
   client: "",
   architect: "DBM Associates (Pvt) Ltd.",
   feeLabel: "Architectural Consultancy (Consortium) Fee",
+  projectAmount: "",
+  feePercent: "",
   lines: STAGES.map((description) => ({ description, estimate: "TBC", progress: "" })),
   previousCertificate: "",
   amountWords: "",
@@ -83,6 +89,15 @@ export function BillGenerator() {
       }
     } catch {
       /* storage unavailable */
+    }
+    try {
+      const sig = localStorage.getItem(SIG_KEY);
+      if (sig) {
+        const { b64, type, name } = JSON.parse(sig) as { b64: string; type: string; name: string };
+        setSignature({ bytes: fromB64(b64), type, name });
+      }
+    } catch {
+      /* ignore */
     }
     setLoaded(true);
   }, []);
@@ -198,15 +213,32 @@ export function BillGenerator() {
   }
 
   async function onSignature(file: File | undefined) {
-    if (!file) return setSignature(null);
+    if (!file) return;
     if (!["image/png", "image/jpeg"].includes(file.type)) return setNotice("Signature must be a PNG or JPG image.");
-    if (file.size > 2 * 1024 * 1024) return setNotice("Signature image must be under 2 MB.");
-    setSignature({ bytes: await file.arrayBuffer(), type: file.type, name: file.name });
+    if (file.size > 1024 * 1024) return setNotice("Signature image must be under 1 MB.");
+    const bytes = await file.arrayBuffer();
+    setSignature({ bytes, type: file.type, name: file.name });
+    // Remembered on this device only, so it does not need re-adding each time.
+    try {
+      localStorage.setItem(SIG_KEY, JSON.stringify({ b64: toB64(bytes), type: file.type, name: file.name }));
+    } catch {
+      setNotice("Signature added, but this browser could not remember it.");
+    }
+  }
+
+  function removeSignature() {
+    setSignature(null);
+    try {
+      localStorage.removeItem(SIG_KEY);
+    } catch {
+      /* ignore */
+    }
   }
 
   const r = state.receipt;
   const inv = state.invoice;
   const rAmount = parseAmount(r.amount);
+  const fee = consultancyFee(inv);
   const invDue =
     inv.lines.reduce((s, l) => s + (Number.isNaN(parseAmount(l.progress)) ? 0 : parseAmount(l.progress)), 0) -
     (Number.isNaN(parseAmount(inv.previousCertificate)) ? 0 : parseAmount(inv.previousCertificate));
@@ -312,10 +344,33 @@ export function BillGenerator() {
                 </Grid>
                 <Field label="Project" value={inv.project} onChange={(v) => setI("project", v)} required />
                 <Field label="Client" value={inv.client} onChange={(v) => setI("client", v)} required />
+                <Field label="Architect" value={inv.architect} onChange={(v) => setI("architect", v)} />
+              </Section>
+
+              <Section title="Consultancy fee">
+                <Field label="Fee line label" value={inv.feeLabel} onChange={(v) => setI("feeLabel", v)} hint="Printed as “label : TBC” until the project amount is known." />
                 <Grid>
-                  <Field label="Architect" value={inv.architect} onChange={(v) => setI("architect", v)} />
-                  <Field label="Fee type" value={inv.feeLabel} onChange={(v) => setI("feeLabel", v)} />
+                  <Field
+                    label="Project amount (Rs)"
+                    inputMode="decimal"
+                    value={inv.projectAmount}
+                    onChange={(v) => setI("projectAmount", v)}
+                    placeholder="Leave blank if not known"
+                    error={inv.projectAmount && Number.isNaN(parseAmount(inv.projectAmount)) ? "Numbers only" : undefined}
+                  />
+                  <Field
+                    label="Fee %"
+                    inputMode="decimal"
+                    value={inv.feePercent}
+                    onChange={(v) => setI("feePercent", v)}
+                    placeholder="e.g. 5"
+                    error={inv.feePercent && !(Number(inv.feePercent.replace("%", "")) > 0) ? "e.g. 5 or 4.5" : undefined}
+                  />
                 </Grid>
+                <p className="rounded-xl bg-paper p-3 text-sm">
+                  On the invoice: <strong>{inv.feeLabel} :</strong>{" "}
+                  <strong className={fee.known ? "" : "text-brand-dark"}>{fee.text}</strong>
+                </p>
               </Section>
 
               <Section title="Items" action={<button onClick={() => setI("lines", [...inv.lines, { description: "", estimate: "", progress: "" }])} className="text-sm font-bold text-brand-dark underline underline-offset-4">+ Add line</button>}>
@@ -338,6 +393,11 @@ export function BillGenerator() {
                         <Field label="Estimate" value={l.estimate} onChange={(v) => setLine(i, "estimate", v)} />
                         <Field label="Progress amount" inputMode="decimal" value={l.progress} onChange={(v) => setLine(i, "progress", v)} />
                       </Grid>
+                      {!Number.isNaN(parseAmount(l.estimate)) && l.progress !== l.estimate && (
+                        <button type="button" onClick={() => setLine(i, "progress", l.estimate)} className="mt-2 text-xs font-bold text-brand-dark underline underline-offset-4">
+                          Claim full estimate (Rs. {formatLKR(parseAmount(l.estimate))})
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ol>
@@ -359,8 +419,13 @@ export function BillGenerator() {
             <label className="block text-sm font-bold">
               Signature image (optional, PNG/JPG)
               <input type="file" accept="image/png,image/jpeg" onChange={(e) => onSignature(e.target.files?.[0])} className="mt-1.5 block w-full text-sm file:mr-3 file:min-h-10 file:rounded-full file:border-0 file:bg-ink file:px-4 file:font-bold file:text-white" />
-              <span className="mt-1 block text-xs font-normal text-muted">{signature ? `Using ${signature.name}. Not saved, so re-add it next time.` : "Or leave blank and sign the printed copy."}</span>
+              <span className="mt-1 block text-xs font-normal text-muted">{signature ? `Using ${signature.name}. Remembered on this device only.` : "Or leave blank and sign the printed copy."}</span>
             </label>
+            {signature && (
+              <button type="button" onClick={removeSignature} className="text-xs font-bold text-brand-dark underline underline-offset-4">
+                Remove signature from this device
+              </button>
+            )}
             <p className="pt-2 text-xs font-bold uppercase tracking-wider text-muted">Bank details (printed on invoices)</p>
             <Field label="Account name" value={state.issuer.accountName} onChange={(v) => setIs("accountName", v)} />
             <Grid>
@@ -427,6 +492,8 @@ function validate(s: BillState): string[] {
   } else {
     if (!s.invoice.client.trim()) out.push("Enter the client name.");
     if (!s.invoice.project.trim()) out.push("Enter the project.");
+    const claimed = s.invoice.lines.reduce((t, l) => t + (Number.isNaN(parseAmount(l.progress)) ? 0 : parseAmount(l.progress)), 0);
+    if (claimed <= 0) out.push("Enter at least one progress amount (the amount being invoiced now).");
   }
   return out;
 }

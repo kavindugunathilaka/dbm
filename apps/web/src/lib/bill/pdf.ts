@@ -1,5 +1,7 @@
 // Client-side A4 PDF generation for DBM receipts and invoices (pdf-lib, no server).
 import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, rgb, type RGB } from "pdf-lib";
+import { LOGO } from "../logo";
+import { consultancyFee } from "./fee";
 import { site } from "../site";
 import type { BillState, InvoiceData, Issuer, ReceiptData } from "./types";
 import { amountToWords, formatLKR, parseAmount } from "./words";
@@ -15,6 +17,8 @@ const C = {
   brand: rgb(0.882, 0.145, 0.106),
   panel: rgb(0.953, 0.949, 0.933),
   white: rgb(1, 1, 1),
+  logoInk: rgb(0, 0, 0),
+  logoRed: rgb(1, 0, 0),
 };
 
 type Fonts = { reg: PDFFont; bold: PDFFont; ital: PDFFont };
@@ -81,13 +85,12 @@ function hline(ctx: Ctx, x1: number, x2: number, y: number, color = C.line, thic
   ctx.page.drawLine({ start: { x: x1, y }, end: { x: x2, y }, thickness, color });
 }
 
-function drawLogo(ctx: Ctx, x: number, yTop: number, s: number) {
-  const stroke = { x, y: yTop, scale: s, borderWidth: 5 };
-  const ring = (cx: number) => `M${cx - 8.5} 25a8.5 8.5 0 1 0 17 0a8.5 8.5 0 1 0 -17 0z`;
-  ctx.page.drawSvgPath(ring(12), { ...stroke, borderColor: C.ink });
-  ctx.page.drawSvgPath("M20.5 1.5V36.5M31 1.5V36.5", { ...stroke, borderColor: C.ink });
-  ctx.page.drawSvgPath(ring(39.5), { ...stroke, borderColor: C.ink });
-  ctx.page.drawSvgPath("M55 36.5V25a8.5 8.5 0 0 1 17 0v11.5M72 25a8.5 8.5 0 0 1 17 0v11.5", { ...stroke, borderColor: C.brand });
+function drawLogo(ctx: Ctx, x: number, yTop: number, width: number) {
+  const s = width / LOGO.width;
+  const base = { x: x - LOGO.x * s, y: yTop + LOGO.y * s, scale: s, borderWidth: LOGO.stroke };
+  ctx.page.drawSvgPath(LOGO.d, { ...base, borderColor: C.logoInk });
+  ctx.page.drawSvgPath(LOGO.b, { ...base, borderColor: C.logoInk });
+  ctx.page.drawSvgPath(LOGO.m, { ...base, borderColor: C.logoRed });
 }
 
 function drawHeader(ctx: Ctx, title: string, meta: [string, string][]): number {
@@ -100,9 +103,9 @@ function drawHeader(ctx: Ctx, title: string, meta: [string, string][]): number {
   text(ctx, `Phone: ${site.phones.map((p) => p.display).join(" / ")}`, M, y0 - 28, { size: 9, color: C.muted });
   text(ctx, `Reg. No. ${site.regNo}`, M, y0 - 41, { size: 9, color: C.muted });
 
-  const s = 0.95;
-  drawLogo(ctx, W - M - 92 * s, y0 + 12, s);
-  trackedFit(ctx, site.printTagline, W - M - 92 * s, W - M, y0 - 35, f.bold, C.muted, 7.5);
+  const lw = 100;
+  drawLogo(ctx, W - M - lw, y0 + 12, lw);
+  trackedFit(ctx, site.printTagline, W - M - lw, W - M, y0 - 27, f.bold, C.muted, 7.5);
 
   hline(ctx, M, W - M, y0 - 58);
 
@@ -254,7 +257,6 @@ function drawInvoice(ctx: Ctx, inv: InvoiceData, issuer: Issuer, sig: PDFImage |
     ["Project", inv.project],
     ["Client", inv.client],
     ["Architect", inv.architect],
-    ["Fee", inv.feeLabel],
   ];
   for (const [k, v] of info) {
     if (!v?.trim()) continue;
@@ -262,6 +264,17 @@ function drawInvoice(ctx: Ctx, inv: InvoiceData, issuer: Issuer, sig: PDFImage |
     text(ctx, k, M, y, { size: 9, color: C.muted });
     lines.forEach((l, i) => text(ctx, l, M + 80, y - i * 13, { size: 10.5, font: k === "Project" ? f.bold : f.reg }));
     y -= 17 + (lines.length - 1) * 13;
+  }
+
+  // Consultancy fee line: "<label> : TBC" until the project amount is known.
+  if (inv.feeLabel.trim()) {
+    const label = `${safe(ctx, inv.feeLabel.trim())} :`;
+    const lw = f.reg.widthOfTextAtSize(label, 9.5);
+    text(ctx, label, M, y, { size: 9.5, color: C.muted });
+    const fee = consultancyFee(inv);
+    const fl = wrap(ctx, fee.text, f.bold, 10.5, W - 2 * M - lw - 6);
+    fl.forEach((l, i) => text(ctx, l, M + lw + 6, y - i * 13, { size: 10.5, font: f.bold, color: fee.known ? C.ink : C.brand }));
+    y -= 17 + (fl.length - 1) * 13;
   }
   y -= 10;
 

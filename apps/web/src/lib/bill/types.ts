@@ -37,6 +37,8 @@ export type InvoiceData = {
   client: string;
   architect: string;
   feeLabel: string;
+  projectAmount: string; // blank until known → fee shows "TBC"
+  feePercent: string; // e.g. "5" for 5%
   lines: InvoiceLine[];
   previousCertificate: string;
   amountWords: string;
