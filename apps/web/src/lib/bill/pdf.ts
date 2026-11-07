@@ -273,7 +273,7 @@ function drawInvoice(ctx: Ctx, inv: InvoiceData, issuer: Issuer, sig: PDFImage |
     text(ctx, label, M, y, { size: 9.5, color: C.muted });
     const fee = consultancyFee(inv);
     const fl = wrap(ctx, fee.text, f.bold, 10.5, W - 2 * M - lw - 6);
-    fl.forEach((l, i) => text(ctx, l, M + lw + 6, y - i * 13, { size: 10.5, font: f.bold, color: fee.known ? C.ink : C.brand }));
+    fl.forEach((l, i) => text(ctx, l, M + lw + 6, y - i * 13, { size: 10.5, font: f.bold, color: C.ink }));
     y -= 17 + (fl.length - 1) * 13;
   }
   y -= 10;

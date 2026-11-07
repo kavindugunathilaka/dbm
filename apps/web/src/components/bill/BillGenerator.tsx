@@ -369,7 +369,7 @@ export function BillGenerator() {
                 </Grid>
                 <p className="rounded-xl bg-paper p-3 text-sm">
                   On the invoice: <strong>{inv.feeLabel} :</strong>{" "}
-                  <strong className={fee.known ? "" : "text-brand-dark"}>{fee.text}</strong>
+                  <strong>{fee.text}</strong>
                 </p>
               </Section>
 
